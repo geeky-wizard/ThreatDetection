@@ -61,7 +61,9 @@ sift = cv2.xfeatures2d.SIFT_create()
 
 for image_path in image_paths:
     im = cv2.imread(image_path)
-    kpts, des = brisk.detectAndCompute(im, None)
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    resized_image = cv2.resize(gray, (512, 512))
+    kpts, des = brisk.detectAndCompute(resized_image, None)
     des_list.append((image_path, des))   
     
 # Stack all the descriptors vertically in a numpy array
@@ -99,6 +101,11 @@ from sklearn.preprocessing import StandardScaler
 stdSlr = StandardScaler().fit(im_features)
 im_features = stdSlr.transform(im_features)
 
+print(len(im_features))
+print(len(im_features[0]))
+print(len(im_features[1]))
+exit(0)
+
 #Train an algorithm to discriminate vectors corresponding to positive and negative training images
 # Train the Linear SVM
 from sklearn.svm import LinearSVC
@@ -115,4 +122,4 @@ clf.fit(im_features, np.array(image_classes))
 #Joblib dumps Python object into one file
 # from sklearn.externals import joblib
 import joblib
-joblib.dump((clf, training_names, stdSlr, k, voc), "bovw2.pkl", compress=3)   
+joblib.dump((clf, training_names, stdSlr, k, voc), "bovw1.pkl", compress=3)   
