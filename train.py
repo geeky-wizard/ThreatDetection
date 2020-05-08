@@ -3,6 +3,8 @@ import numpy as np
 import os
 import scipy
 from scipy.cluster.vq import kmeans, vq
+import joblib
+from sklearn.preprocessing import StandardScaler
 
 train_path = 'Images/Train/'
 
@@ -18,6 +20,8 @@ DESCRIPTOR_TYPE = brisk
 # No of Clusters
 # Hyperparameter
 k = 200
+
+OutputPickleFile = "bovw.pkl"
 
 def imglist(path):    
     return [os.path.join(path, f) for f in os.listdir(path)]
@@ -87,19 +91,33 @@ def main():
         all_descriptors_list.append(des_list)
         all_descriptors_stack.append(des_stack)
 
+    # print(len(all_descriptors_list[0]),len(all_descriptors_list[1]))
+    # print(len(all_descriptors_stack[0]),len(all_descriptors_stack[1]))
+
     all_features = []
     for i in range(len(training_info)):
-        all_features.append(calcFeatures(all_descriptors_stack[i],all_descriptors_list[i],training_info[0][i]))
+        all_features.append(calcFeatures(all_descriptors_stack[i],all_descriptors_list[i],training_info[i][0]))
 
-    all_features_avg = getAvgOfFeatures(all_features)
+    all_features_avgVector = getAvgOfFeatures(all_features)
+    all_thresholds = []
 
-    # print(len(training_info))
-    # print(len(all_features))
-    # print(len(all_features_avg))
-    print(len(all_features_avg[0]))
-    print(len(all_features_avg[1]))
+    # Set Thresholds for every class label
 
-    print("\nTraining Done.\nPickle File saved as \n")
+    # Perform Tf-Idf vectorization
+    for i in range(len(training_info)):
+        nbr_occurences = np.sum( (all_features[i] > 0) * 1, axis = 0)
+        idf = np.array(np.log((1.0*len(training_info[0][i])+1) / (1.0*nbr_occurences + 1)), 'float32')
+        stdSlr = StandardScaler().fit(all_features[i])
+        all_features[i] = stdSlr.transform(all_features[i])
+
+    all_features_avgVector = getAvgOfFeatures(all_features)
+
+    print(np.mean(all_features_avgVector[0]),np.median(all_features_avgVector[0]))
+    print(np.mean(all_features_avgVector[1]),np.median(all_features_avgVector[1]))
+
+    joblib.dump((all_features_avgVector, all_thresholds, training_names, k),OutputPickleFile, compress=3) 
+
+    print("\nTraining Done.\nPickle File saved as ",OutputPickleFile)
 
 if __name__ == "__main__":
     main()
