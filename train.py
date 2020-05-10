@@ -99,23 +99,45 @@ def main():
         all_features.append(calcFeatures(all_descriptors_stack[i],all_descriptors_list[i],training_info[i][0]))
 
     all_features_avgVector = getAvgOfFeatures(all_features)
-    all_thresholds = []
 
-    # Set Thresholds for every class label
+    # print(all_features_avgVector[0])
+    # print(all_features_avgVector[1]
+    all_distances_euc=[[],[]]
+    all_distances_cb=[[],[]]
+    for i in range(len(all_features)):
+        for img_feature in all_features[i]:
+            cb_dist = scipy.spatial.distance.cityblock(all_features_avgVector[i], img_feature)
+            all_distances_cb[i].append(cb_dist)
 
-    # Perform Tf-Idf vectorization
-    for i in range(len(training_info)):
-        nbr_occurences = np.sum( (all_features[i] > 0) * 1, axis = 0)
-        idf = np.array(np.log((1.0*len(training_info[0][i])+1) / (1.0*nbr_occurences + 1)), 'float32')
-        stdSlr = StandardScaler().fit(all_features[i])
-        all_features[i] = stdSlr.transform(all_features[i])
+            euc_dist = scipy.spatial.distance.euclidean(all_features_avgVector[i], img_feature)
+            all_distances_euc[i].append(euc_dist)
 
-    all_features_avgVector = getAvgOfFeatures(all_features)
+        # all_distances_euc[i].sort()
+        # all_distances_cb[i].sort()
 
-    print(np.mean(all_features_avgVector[0]),np.median(all_features_avgVector[0]))
-    print(np.mean(all_features_avgVector[1]),np.median(all_features_avgVector[1]))
 
-    joblib.dump((all_features_avgVector, all_thresholds, training_names, k),OutputPickleFile, compress=3) 
+    # City Block Distance
+    # print(all_distances_cb[0])
+    # print("\n\n")
+    # print(all_distances_cb[1])
+
+    # print("\n\n\n")
+
+    # for info in training_info[1][0]:
+    #     print(info)
+
+    # Euclidean Distance
+    # print(all_distances_euc[0])
+    # print("\n\n")
+    # print(all_distances_euc[1])
+
+    all_thresholds = [280,380] # city block
+
+    print(all_features_avgVector[0])
+    print("\n\n")
+    print(all_features_avgVector[1])
+
+    joblib.dump((all_features_avgVector, all_thresholds, training_names),OutputPickleFile, compress=3) 
 
     print("\nTraining Done.\nPickle File saved as ",OutputPickleFile)
 

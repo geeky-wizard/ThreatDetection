@@ -47,7 +47,7 @@ for i in range(len(image_paths)):
     im = cv2.imread(image_paths[i])
     gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
     resized_image = cv2.resize(gray, (512, 512))    # Resize Image
-    kpts, des = surf.detectAndCompute(resized_image, None)
+    kpts, des = brisk.detectAndCompute(resized_image, None)
 
     if image_classes[i] == 0:
         des_side_list.append((image_paths[i], des))
@@ -103,6 +103,8 @@ for i in range(len(des_side_list)):
 side_features_avg = np.mean(side_features,axis=0)
 front_features_avg = np.mean(front_features,axis=0)
 
+print(side_features)
+
 lst_front=[]
 lst_side=[]
 count = 0
@@ -114,7 +116,7 @@ for item in side_features:
     lst_side.append(dist)
     
 lst_side.sort()
-print(lst_side)
+# print(lst_side)
 print("\n\n")
 # SET SIDE FEATURES THRESHOLD
 side_features_threshold = 50.0
@@ -125,29 +127,29 @@ for item in front_features:
     lst_front.append(dist)
 
 lst_front.sort()
-print(lst_front)
-print("\n\n")
+# print(lst_front)
+# print("\n\n")
 
 # SET FRONT FEATURES THRESHOLD
 front_features_threshold = 70.0
 
-print(len(side_features))
-print(len(front_features))
-print("\n\n")
+# print(len(side_features))
+# print(len(front_features))
+# print("\n\n")
 
 match_ct=0
 for item in side_features:
     # des = des.reshape((200))
     dist = scipy.spatial.distance.cityblock(front_features_avg, item)
-    print(dist)
+    # print(dist)
     if dist<580:
         match_ct+=1
     lst_side.append(dist)
 
-print("ct ia",match_ct)
+# print("ct ia",match_ct)
 
 # with open("features1.pickle","wb") as file:
 #     pickle.dump((side_features_avg,front_features_avg,side_features_threshold,front_features_threshold),file)
 
-print(np.mean(lst_front))
-print(np.mean(lst_side))
+# print(np.mean(lst_front))
+# print(np.mean(lst_side))
